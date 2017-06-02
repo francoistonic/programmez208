@@ -1,0 +1,159 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf210
+{\fonttbl\f0\froman\fcharset0 TimesNewRomanPSMT;}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\ri-386
+
+\f0\fs20 \cf0 var gulp = require('gulp');\
+var concat = require('gulp-concat');\
+\
+gulp.task('minjs', function () \{\
+    return gulp.src("/js/*.js")\
+            .pipe(concat('all.js'))\
+            .pipe(gulp.dest('dist'))\
+            .pipe(gulp.dest('dist'));\
+\});\
+\
+gulp.task('default', function () \{\
+    gulp.watch(["/js/*.js"], ["minjs"]);\
+\});\
+\
+\
+gulp.task('minjs', function () \{\
+    return gulp.src(files)\
+            .pipe(concat('all.js'))\
+            .pipe(gulp.dest('dist'))\
+            .pipe(uglify())\
+            .pipe(gulp.dest('dist'));\
+\});\
+\
+\
+var autoprefixer = require('gulp-autoprefixer');\
+var cleanCSS = require('gulp-clean-css');\
+\
+gulp.task('mincss', function () \{\
+    return gulp.src("css/*.css")\
+            .pipe(autoprefixer())\
+            .pipe(concat('all.css'))\
+            .pipe(cleanCSS())\
+            .pipe(gulp.dest('dist'));\
+\});\
+\
+gulp.task('default', function () \{\
+    gulp.watch(["js/*,js","css/*.css"], ["minjs", "mincss"]);\
+\});\
+\
+\
+var htmlmin = require('gulp-html-minifier');\
+\
+gulp.task('minhtml', function () \{\
+    return gulp.src('*HTML')\
+            .pipe(htmlmin(\{collapseWhitespace: true\}))\
+            .pipe(gulp.dest('./dist'));\
+\});\
+\
+\
+gulp.task('default', function () \{\
+    gulp.watch(["*HTML","js/*.js","css/*.css"], ["minjs", "mincss", "minhtml"]);\
+\});\
+\
+\
+\
+var cheerio = require('cheerio');\
+\
+var files = [];\
+var filesCSS = [];\
+var txt = fs.readFileSync("index.html");\
+var $ = cheerio.load(txt);\
+\
+$("script").each(function () \{\
+    var file = $(this).attr("src");\
+    console.log(file);\
+    if (file && file.indexOf("http") === -1)\
+        files.push(file);\
+\});\
+\
+$("link").each(function () \{\
+    var file = $(this).attr("href");\
+    console.log(file);\
+    if ($(this).attr("rel") === "stylesheet" && file && file.indexOf("http") === -1)\
+        filesCSS.push(file);\
+\});\
+var all = ["gulpfile.js", "index.html"].concat(files, filesCSS);\
+\
+gulp.task('minjs', function () \{\
+    return gulp.src(files)\
+            .pipe(concat('all.js'))\
+            .pipe(gulp.dest('dist'))\
+            .pipe(uglify())\
+            .pipe(gulp.dest('dist'));\
+\});\
+\
+gulp.task('mincss', function () \{\
+    return gulp.src(filesCSS)\
+            .pipe(autoprefixer())\
+            .pipe(concat('all.css'))\
+            .pipe(cleanCSS())\
+            .pipe(gulp.dest('dist'));\
+\});\
+\
+gulp.task('minhtml', ['mincss', 'minjs'],function () \{\
+    return gulp.src('*HTML')\
+            .pipe(injectSvg())\
+            .pipe(htmlmin(\{collapseWhitespace: true\}))\
+            .pipe(p("dist/all.js", "dist/all.css"))\
+            .pipe(gulp.dest('./dist'));\
+\});\
+\
+gulp.task('default', function () \{\
+    gulp.watch(all, ["minjs", "mincss", "minhtml"]);\
+\});\
+\
+\
+\
+\
+var through = require('through2');    // npm install --save through2\
+var cheerio = require('cheerio');\
+var fs = require('fs');\
+\
+// consts\
+var PLUGIN_NAME = 'gulp-example';\
+\
+module.exports = function (jsn, cssn) \{\
+    return through.obj(function (file, encoding, callback)\
+    \{\
+        var mybuf = file.contents.toString('utf-8');\
+        var $ = cheerio.load(mybuf);\
+        $("script").each(function ()\
+        \{\
+            var $this = $(this);\
+            if ($this.attr("src") && $this.attr("src").indexOf("http") === -1)\
+                $this.remove();\
+        \});\
+        $("link").each(function ()\
+        \{\
+            var $this = $(this);\
+            if ($this.attr("href") && $this.attr("href").indexOf("http") === -1)\
+                $this.remove();\
+        \});\
+        var js = fs.readFileSync(jsn);\
+        var css = fs.readFileSync(cssn);\
+        $("head").append('<style>' + css + '</style>');\
+        $("body").append("<script>" + js + "</script>");\
+        file.contents = new Buffer($HTML());\
+        return callback(null, file);\
+    \}, jsn, cssn);\
+\};\
+\
+\
+\
+var p = require('./plugin');\
+\
+gulp.task('minhtml', ['mincss', 'minjs'], function () \{\
+    return gulp.src('*HTML')\
+            .pipe(injectSvg())\
+            .pipe(htmlmin(\{collapseWhitespace: true\}))\
+            .pipe(p("dist/all.js", "dist/all.css"))\
+            .pipe(gulp.dest('./dist'));\
+\});}

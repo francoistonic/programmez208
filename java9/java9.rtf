@@ -1,0 +1,248 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf210
+{\fonttbl\f0\fnil\fcharset0 Calibri;\f1\froman\fcharset0 TimesNewRomanPSMT;}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\ri-52\sl276\slmult1\qj
+
+\f0\i\fs22 \cf0 module com.ssaurel.zipvalidator \{\
+   exports com.ssaurel.zipvalidator.api;\
+\pard\pardeftab720\ri-52\sl276\slmult1\sa200\qj
+
+\f1 \cf0 \}\
+\pard\pardeftab720\ri-52\sl276\slmult1\qj
+\cf0 \
+\pard\pardeftab720\ri-52\sl276\slmult1\qj
+
+\f0 \cf0 module com.ssaurel.addresschecker \{\
+   exports com.ssaurel.addresschecker.api;\
+   requires com.ssaurel.zipvalidator;\
+\pard\pardeftab720\ri-52\sl276\slmult1\sa200\qj
+
+\f1 \cf0 \}
+\i0 \
+\
+\
+\pard\pardeftab720\ri-52\sl276\slmult1\qj
+
+\f0\i \cf0 HttpResponse response = HttpRequest\
+        .create(new URI("https://www.ssaurel.com/blog"))\
+        .body(noBody())\
+        .GET().send();\
+\
+int responseCode = response.responseCode();\
+String responseBody = response.body(asString());\
+         \
+\pard\pardeftab720\ri-52\sl276\slmult1\sa200\qj
+\cf0 System.out.println(responseBody);\
+\pard\pardeftab720\ri-52\sl276\slmult1\qj
+
+\f1\i0 \cf0 \
+\pard\pardeftab720\ri-52\sl276\slmult1\qj
+
+\f0\i \cf0 HttpRequest req = HttpRequest\
+        .create(new URI("https://www.ssaurel.com/blog"))\
+        .body(noBody())\
+        .GET();\
+    \
+CompletableFuture<HttpResponse> aResp = req.sendAsync();\
+Thread.sleep(10);\
+\
+if (!aResp.isDone()) \{\
+   aResp.cancel(true);\
+   System.out.println("Echec pour obtenir une r\'e9ponse rapidement ...");\
+   return;\
+\}\
+\
+\pard\pardeftab720\ri-52\sl276\slmult1\sa200\qj
+\cf0 HttpResponse response = aResp.get();\
+\pard\pardeftab720\ri-52\sl276\slmult1\sa200\qj
+
+\f1\i0\b \cf0 \
+\pard\pardeftab720\ri-52\sl276\slmult1\sa200\qj
+
+\f0\i\b0 \cf0 public static void main(String[] args) throws Exception \{\
+\pard\pardeftab720\ri-52\sl276\slmult1\qj
+\cf0    Process proc = Runtime.getRuntime().exec(new String[]\{ "/bin/sh", "-c", "echo $PPID" \});\
+ \
+   if (proc.waitFor() == 0) \{\
+      InputStream in = proc.getInputStream();\
+      int available = in.available();\
+      byte[] outputBytes = new byte[available];\
+      in.read(outputBytes);\
+\
+      String pid = new String(outputBytes);\
+      System.out.println("PID\'a0= " + pid);\
+   
+\f1 \}\
+\pard\pardeftab720\ri-52\sl276\slmult1\sa200\qj
+\cf0 \}\
+\pard\pardeftab720\ri-52\sl276\slmult1
+
+\i0 \cf0 \
+\pard\pardeftab720\ri-52\sl276\slmult1
+
+\f0\i \cf0 import java.time.Instant;\
+import java.time.Duration;\
+import java.time.temporal.ChronoUnit;\
+\
+public class ProcessAPIDemoUtil\{\
+  public static void printProcessDetails(ProcessHandle currentProcess)\{\
+    ProcessHandle.Info currentProcessInfo = currentProcess.info();\
+	\
+    if ( currentProcessInfo.command().orElse("").equals(""))\{\
+      return;\
+    \}\
+    System.out.println("Processus PID: " + currentProcess.getPid());\
+    System.out.println("Commande Pathname : " + currentProcessInfo.command().orElse(""));\
+	\
+    String[] arguments = currentProcessInfo.arguments().orElse(new String[]\{\});\
+	\
+    if ( arguments.length != 0)\{\
+      System.out.print("Arguments: ");\
+	  \
+      for(String arg : arguments)\{\
+        System.out.print(arg + " ");\
+      
+\f1 \}\
+	
+\f0   \
+      System.out.println();\
+    \}\
+	\
+    System.out.println("D\'e9marr\'e9 \'e0 : " + currentProcessInfo.startInstant().orElse(Instant.now()).toString());\
+    System.out.println("D\'e9marr\'e9 depuis : " + currentProcessInfo.totalCpuDuration().orElse(Duration.ofMillis(0)).toMillis() + "ms");\
+    System.out.println("Propri\'e9taire : " + currentProcessInfo.user().orElse(""));\
+  
+\f1 \}\
+\}\
+\
+
+\f0 public class Demo\{\
+  public static void main(String[] args)\{\
+    // filtrage sur processus ayant une commande / on prend 5 r\'e9sultats\
+    ProcessHandle.allProcesses()\
+      .filter(processHandle -> processHandle.info().command().isPresent())\
+      .limit(5)\
+      .forEach((process) ->\{\
+        ProcessAPIDemoUtil.printProcessDetails(process);\
+      
+\f1 \}
+\f0 );\
+  \}\
+\pard\pardeftab720\ri-52\sl276\slmult1\sa200
+
+\f1 \cf0 \}\
+\pard\pardeftab720\ri-52\sl276\slmult1\qj
+
+\i0\b \cf0 \
+\pard\pardeftab720\ri-52\sl276\slmult1\qj
+
+\f0\i\b0 \cf0 import java.util.List;\
+import java.util.stream.Collectors;\
+\
+public class StackWalkerDemo \{\
+   public static void main(String[] args) \{\
+      methodA();\
+   \}\
+\
+   public static void methodA() \{\
+      methodB();\
+   \}\
+\
+   public static void methodB() \{\
+      methodC();\
+   \}\
+\
+   public static void methodC() \{\
+      StackWalker sw = StackWalker.getInstance();\
+      List<StackWalker.StackFrame> frames;\
+\
+      frames = sw.walk(frames_ -> frames_.collect(Collectors.toList()));\
+      frames.forEach(System.out::println);\
+      System.out.println();\
+\
+      long numFrames = sw.walk(frames_ -> frames_.count());\
+      System.out.printf("Nombre total d\'92\'e9l\'e9ments : %d%n%n", numFrames);\
+\
+      frames = sw.walk(frames_ -> frames_.limit(2).collect(Collectors.toList()));\
+      frames.forEach(System.out::println);\
+   
+\f1 \}\
+\pard\pardeftab720\ri-52\sl276\slmult1\sa200\qj
+\cf0 \}\
+\pard\pardeftab720\ri-52\sl276\slmult1\sa200\qj
+
+\f0\i0 \cf0 L\'92ex\'e9cution de ce code produit la sortie suivante\'a0:\
+\pard\pardeftab720\ri-52\sl276\slmult1\qj
+
+\i \cf0 StackWalkerDemo.c(StackWalkerDemo.java:27)\
+StackWalkerDemo.b(StackWalkerDemo.java:19)\
+StackWalkerDemo.a(StackWalkerDemo.java:14)\
+StackWalkerDemo.main(StackWalkerDemo.java:9)\
+\
+Nombre total d\'92\'e9l\'e9ments : 4\
+\
+StackWalkerDemo.c(StackWalkerDemo.java:34)\
+\pard\pardeftab720\ri-52\sl276\slmult1\sa200\qj
+\cf0 StackWalkerDemo.b(StackWalkerDemo.java:19)\
+\pard\pardeftab720\ri-52\sl276\slmult1\qj
+
+\f1\i0 \cf0 \
+\pard\pardeftab720\ri-52\sl276\slmult1\qj
+
+\f0\i \cf0 public class StackWalkerDemo \{\
+   public static void main(String[] args) \{\
+      methodA();\
+   \}\
+\
+   public static void methodA() \{\
+      methodB();\
+   \}\
+\
+   public static void methodB() \{\
+      methodC();\
+   \}\
+\
+   public static void methodC() \{\
+      StackWalker sw = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);\
+      sw.forEach(f-> \
+                 \{\
+                    System.out.printf("Bytecode index: %d%n", \
+                                      f.getByteCodeIndex());\
+                    System.out.printf("Nom de la classe: %s%n", \
+                                      f.getClassName());\
+                    System.out.printf("Classe d\'e9clarante: %s%n", \
+                                      f.getDeclaringClass());\
+                    System.out.printf("Nom du fichier: %s%n", \
+                                      f.getFileName());\
+                    System.out.printf("Native\'a0? : %b%n", \
+                                      f.isNativeMethod());\
+                    System.out.printf("Num\'e9ro de ligne : %d%n", \
+                                      f.getLineNumber());\
+                    System.out.printf("Nom de la m\'e9thode : %s%n%n", \
+                                      f.getFileName());\
+                 \});\
+   \}\
+\pard\pardeftab720\ri-52\sl276\slmult1\sa200\qj
+
+\f1 \cf0 \}\
+\pard\pardeftab720\ri-52\sl276\slmult1\qj
+
+\i0 \cf0 \
+\pard\pardeftab720\ri-52\sl276\slmult1\qj
+
+\f0\i \cf0 public enum MathematicalConstants < T > \{\
+    E < Double > (Math.PI),\
+    PI < Double > (Math.E),\
+    ZERO < Integer > (0),\
+    ONE < Integer > (1),\
+    i < Complex > (new Complex(0, 1))\
+    private MathematicalConstants(T underlyingObject) \{\
+        this.underlyingObject = underlyingObject;\
+    \}\
+\pard\pardeftab720\ri-52\sl276\slmult1\sa200\qj
+
+\f1 \cf0 \}\
+\
+}
